@@ -131,36 +131,21 @@ hurdat$DateTime <- as.POSIXct(
 hurdat$Name[hurdat$Name == "UNNAMED"] <- hurdat$Key[hurdat$Name == "UNNAMED"]
 hurdat$years<-year(hurdat$DateTime)
 
-hurdat$Category[hurdat$Status == "TS"] = 2
-hurdat$Category[hurdat$Status == "TD"] = 1
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=64 & hurdat$Wind<=82] = 3
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=83 & hurdat$Wind<=95] = 4
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=96 & hurdat$Wind<=112] = 5
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=113 & hurdat$Wind<=136] = 6
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=137] = 7
+
+hurdat$Category[hurdat$Status == "TD"|hurdat$Status == "SD"] = 0.5
+hurdat$Category[hurdat$Status == "TS"|hurdat$Status == "SS"] = 0.75
+hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=64 & hurdat$Wind<=82] = 1
+hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=83 & hurdat$Wind<=95] = 2
+hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=96 & hurdat$Wind<=112] = 3
+hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=113 & hurdat$Wind<=136] = 4
+hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=137] = 5
+
 hurdat$Name <- paste(hurdat$Name, "-", hurdat$years)
-df<-hurdat[(hurdat$years>2004),]
-#df$colour<-ifelse(df$Status == "TS", "Green",(ifelse(df$Status == "TD", "Blue",(ifelse(df$Status == "HU", "Red","Black")))))
-coordinates(df) <- c( "Lon", "Lat" )
+df<-hurdat
+df$colour<-ifelse(df$Category == 0.5, "lightgreen",(ifelse(df$Category == 0.75, "darkgreen",(ifelse(df$Category ==1, "yellow",(ifelse(df$Category ==2, "orange",(ifelse(df$Category ==3, "darkorange",(ifelse(df$Category ==4, "red",(ifelse(df$Category ==5, "darkred","darkgrey")))))))))))))
+df$colour[is.na(df$colour)] <- "darkgrey"
+landfalls<-df[(df$Record=="L"),]
 
-
-#initialisation of counter
-id <- 1
-Keys<-as.array(unique(df$Key))
-#for each Name, create a line that connects all points with that Name
-for ( i in Keys) 
-{
-  df3<-df[(df$Key==i),]
-  event.lines <- SpatialLines( list( Lines( Line( df3@coords ), ID=id )),
-                               proj4string = CRS( "+init=epsg:4326" ) )
-  if ( id == 1 ) {
-    sp_lines  <- event.lines
-  } else {
-    sp_lines  <- spRbind( sp_lines, event.lines)
-  }
-  
-  id <- id + 1                                                                  
-}
 
 hurdat$Date =  format(hurdat$DateTime,format='%Y-%m-%d')
 
@@ -195,13 +180,13 @@ df2$DateTime = year(df2$DateTime)
 df2 = aggregate(rep(1, nrow(df2)), by = list(x = df2$Category, y = df2$DateTime), sum)
 colnames(df2) = c("Category", "Year", "Count")
 
-df2$TD[df2$Category == 1] <- df2$Count[df2$Category == 1]
-df2$TS[df2$Category == 2] <- df2$Count[df2$Category == 2]
-df2$HU1[df2$Category == 3] <- df2$Count[df2$Category == 3]
-df2$HU2[df2$Category == 4] <- df2$Count[df2$Category == 4]
-df2$HU3[df2$Category == 5] <- df2$Count[df2$Category == 5]
-df2$HU4[df2$Category == 6] <- df2$Count[df2$Category == 6]
-df2$HU5[df2$Category == 7] <- df2$Count[df2$Category == 7]
+df2$TD[df2$Category == 0.5] <- df2$Count[df2$Category == 0.5]
+df2$TS[df2$Category == 0.75] <- df2$Count[df2$Category == 0.75]
+df2$HU1[df2$Category == 1] <- df2$Count[df2$Category == 1]
+df2$HU2[df2$Category == 2] <- df2$Count[df2$Category == 2]
+df2$HU3[df2$Category == 3] <- df2$Count[df2$Category == 3]
+df2$HU4[df2$Category == 4] <- df2$Count[df2$Category == 4]
+df2$HU5[df2$Category == 5] <- df2$Count[df2$Category == 5]
 
 df2["Category"] <- NULL
 df2["Count"] <- NULL
@@ -210,7 +195,7 @@ df2[is.na(df2)] <- 0
 df2 = ddply(df2,"Year",numcolwise(sum))
 
 Names<-as.array(unique(df$Name))
-yr<-2005:2018
+yr<-1851:2018
 toph<-hurricanes[order(hurricanes$Wind, decreasing = TRUE),]
 toph<-head(toph,10)
 
@@ -233,9 +218,9 @@ ui <- dashboardPage(
                      ),
                      conditionalPanel(
                        condition = "input.flt == 'Name'",
-                       selectInput("ipnm", "Select the Name to visualize", Names),   
+                       selectInput("ipnm", "Select the Name to visualize", Names,selected= "OSCAR - 2018"),   
                      ),
-                     
+                     checkboxInput("land", "Only hurricanes which made Landfall", value = FALSE),
                      
                      menuItem("About",tabName = "About"))
   ),
@@ -316,43 +301,41 @@ server <- function(input, output) {
     {
       if(input$flt=="Year")
       {
-        df<-df[(df$years==input$ipyr),]
+        df3<-df[(df$years==input$ipyr),]
       }
       if(input$flt=="Name")
       {
-        df<-df[(df$Name==input$ipnm),]
+        df3<-df[(df$Name==input$ipnm),]
       }
       if(input$flt=="TopTen")
       {
-        df<-hurdat[(hurdat$Key==toph$Key),]
-        coordinates(df) <- c( "Lon", "Lat" )
+        df3<-df[(df$Key==toph$Key),]
+        
         
       }
-      id <- 1
-      Names<-as.array(unique(df$Name))
-      for ( i in Names) 
-      {
-        df3<-df[(df$Name==i),]
-        ev.lines <- SpatialLines( list( Lines( Line( df3@coords ), ID=id )),
-                                  proj4string = CRS( "+init=epsg:4326" ) )
-        if ( id == 1 ) {
-          sp_lines2  <- ev.lines
-        } else {
-          sp_lines2  <- spRbind( sp_lines2, ev.lines)
-        }
-        
-        id <- id + 1                                                                  
-      }
-      plotdata<-sp_lines2
       
     }
     else{
-      plotdata<-sp_lines
+      df3<-df[(df$years>2004),]
+    }
+    if(input$land)
+    {
+      df3<-df3 %>%
+        filter(Name %in% landfalls$Name)
     }
     
-    leaflet()%>%
-      addTiles() %>%
-      addPolylines( data = plotdata,color="Red", weight =2,highlightOptions = highlightOptions(color = "white",weight = 5, bringToFront = F, opacity = 1) )->map
+    Names2<-as.array(unique(df3$Name))
+    map <- leaflet()
+    map <- addTiles(map)
+    for ( i in Names2) 
+    {
+      df4<-df3[(df3$Name==i),]
+      
+  
+      map<-addCircles(map, lat=df4$Lat,lng=df4$Lon, weight =4,color=df4$colour)
+      map<-addPolylines(map, lat=df4$Lat,lng=df4$Lon, weight =3,color="White",opacity = 0.60, highlightOptions = highlightOptions(color = "white",bringToFront = T))
+      }
+      
     map
   })
   
