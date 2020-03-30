@@ -20,12 +20,12 @@ x <- purrr::map("atlantic.txt", readr::read_lines)
 
 x <- purrr::flatten_chr(x)
 
-hurdat <- as.data.frame(x, stringsAsFactors = FALSE)
+atlantic <- as.data.frame(x, stringsAsFactors = FALSE)
 header_rows <- grep(pattern = "^[[:alpha:]]{2}[[:digit:]]{6}.+", x)
 
 # Split header_rows into variables
-hurdat <- tidyr::extract(
-  data = hurdat,
+atlantic <- tidyr::extract(
+  data = atlantic,
   col = "x",
   into = c("Key", "Name", "Lines"),
   regex = paste0(
@@ -38,14 +38,14 @@ hurdat <- tidyr::extract(
 )
 
 # Fill headers down
-hurdat <- tidyr::fill(data = hurdat, .data$Key, .data$Name, .data$Lines)
+atlantic <- tidyr::fill(data = atlantic, .data$Key, .data$Name, .data$Lines)
 
 # Remove original header rows
-hurdat <- hurdat[-header_rows, ]
+atlantic <- atlantic[-header_rows, ]
 
 # Split storm details into variables
-hurdat <- tidyr::extract(
-  data = hurdat,
+atlantic <- tidyr::extract(
+  data = atlantic,
   col = "x",
   into = c(
     "Year",
@@ -105,8 +105,8 @@ hurdat <- tidyr::extract(
   convert = TRUE
 )
 
-hurdat <- dplyr::mutate(
-  .data = hurdat,
+atlantic <- dplyr::mutate(
+  .data = atlantic,
   Lat = dplyr::if_else(
     .data$LatHemi == "N", .data$Lat * 1, .data$Lat * -1
   ),
@@ -115,37 +115,37 @@ hurdat <- dplyr::mutate(
   )
 )
 
-hurdat$DateTime <- paste(
-  paste(hurdat$Year, hurdat$Month, hurdat$Date, sep = "-"),
-  paste(hurdat$Hour, hurdat$Minute, "00", sep = ":"),
+atlantic$DateTime <- paste(
+  paste(atlantic$Year, atlantic$Month, atlantic$Date, sep = "-"),
+  paste(atlantic$Hour, atlantic$Minute, "00", sep = ":"),
   sep = " "
 )
 
-hurdat <- dplyr::select(
-  .data = hurdat,
+atlantic <- dplyr::select(
+  .data = atlantic,
   .data$Key, .data$Name, .data$DateTime, .data$Record:.data$Lat,
   .data$Lon, .data$Wind:.data$NW64
 )
 
-hurdat$DateTime <- as.POSIXct(
-  strptime(hurdat$DateTime, format = "%Y-%m-%d %H:%M:%S")
+atlantic$DateTime <- as.POSIXct(
+  strptime(atlantic$DateTime, format = "%Y-%m-%d %H:%M:%S")
 )
-hurdat$Name[hurdat$Name == "UNNAMED"] <- hurdat$Key[hurdat$Name == "UNNAMED"]
-hurdat$Year<-year(hurdat$DateTime)
+atlantic$Name[atlantic$Name == "UNNAMED"] <- atlantic$Key[atlantic$Name == "UNNAMED"]
+atlantic$Year<-year(atlantic$DateTime)
 
-hurdat$Name[hurdat$Name == "AL011900"] = "GALVESTON"
+atlantic$Name[atlantic$Name == "AL011900"] = "GALVESTON"
 
-hurdat$Category[hurdat$Status == "TD"|hurdat$Status == "SD"] = 0.5
-hurdat$Category[hurdat$Status == "TS"|hurdat$Status == "SS"] = 0.75
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=64 & hurdat$Wind<=82] = 1
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=83 & hurdat$Wind<=95] = 2
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=96 & hurdat$Wind<=112] = 3
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=113 & hurdat$Wind<=136] = 4
-hurdat$Category[hurdat$Status == "HU" & hurdat$Wind>=137] = 5
+atlantic$Category[atlantic$Status == "TD"|atlantic$Status == "SD"] = 0.5
+atlantic$Category[atlantic$Status == "TS"|atlantic$Status == "SS"] = 0.75
+atlantic$Category[atlantic$Status == "HU" & atlantic$Wind>=64 & atlantic$Wind<=82] = 1
+atlantic$Category[atlantic$Status == "HU" & atlantic$Wind>=83 & atlantic$Wind<=95] = 2
+atlantic$Category[atlantic$Status == "HU" & atlantic$Wind>=96 & atlantic$Wind<=112] = 3
+atlantic$Category[atlantic$Status == "HU" & atlantic$Wind>=113 & atlantic$Wind<=136] = 4
+atlantic$Category[atlantic$Status == "HU" & atlantic$Wind>=137] = 5
 
-hurdat$Name <- paste(hurdat$Name, "-", hurdat$Year)
-hurdat$Date =  format(hurdat$DateTime,format='%Y-%m-%d')
-hurdat<-hurdat %>% replace_with_na(replace = list(Pressure = -999))
+atlantic$Name <- paste(atlantic$Name, "-", atlantic$Year)
+atlantic$Date =  format(atlantic$DateTime,format='%Y-%m-%d')
+atlantic<-atlantic %>% replace_with_na(replace = list(Pressure = -999))
 
 x <- purrr::map("pacific.txt", readr::read_lines)
 
@@ -278,19 +278,19 @@ pacific$Lon[pacific$Lon<0] = pacific$Lon[pacific$Lon<0] + 360
 
 
 
-df1 = hurdat[c("Key","Wind")]
-df2 = hurdat[c("Key","Pressure")]
-nameKey = hurdat[c("Key","Name")]
+df1 = atlantic[c("Key","Wind")]
+df2 = atlantic[c("Key","Pressure")]
+nameKey = atlantic[c("Key","Name")]
 df1 = ddply(df1, "Key", numcolwise(max))
 df2 = ddply(df2, "Key", numcolwise(min))
 nameKey = ddply(nameKey, "Key", function(nameKey) unique(nameKey))
 hurricanes = merge(df1,df2, by.x = "Key", by.y = "Key")
-df1 = hurdat[c("Key","DateTime")]
+df1 = atlantic[c("Key","DateTime")]
 df1 = data.table(df1)
 df1 = df1[,list(DateTime = min(DateTime)), by = Key]
 df1 = data.frame(df1)
 hurricanes = merge(hurricanes,df1, by.x = "Key", by.y = "Key")
-df2 = hurdat[c("Key","Category")]
+df2 = atlantic[c("Key","Category")]
 df2 = df2[!is.na(df2$Category),]
 df2 = ddply(df2, "Key", numcolwise(max))
 df2 = merge(df2,df1, by.x = "Key", by.y = "Key")
@@ -311,7 +311,7 @@ df2["Category"] <- NULL
 df2["Count"] <- NULL
 df2[is.na(df2)] <- 0
 df2 = ddply(df2,"Year",numcolwise(sum))
-Names<-as.array(unique(hurdat$Name))
+Names<-as.array(unique(atlantic$Name))
 yr<-1851:2018
 Wtoph<-hurricanes[order(hurricanes$Wind, decreasing = TRUE),]
 Wtoph<-head(Wtoph,10)
@@ -552,7 +552,7 @@ server <- function(input, output) {
   })
   
   output$bar3 <- renderPlot({
-    data = hurdat[c("Year","Wind")]
+    data = atlantic[c("Year","Wind")]
     data = ddply(data, "Year", numcolwise(max))
     
     pac = pacific[c("Year","Wind")] 
@@ -567,7 +567,7 @@ server <- function(input, output) {
   })
   
   output$bar4 <- renderPlot({
-    data = hurdat[c("Year","Pressure")]
+    data = atlantic[c("Year","Pressure")]
     data = ddply(data, "Year", numcolwise(min))
     
     pac = pacific[c("Year","Pressure")] 
@@ -589,7 +589,7 @@ server <- function(input, output) {
   
   #Atlantic
   output$leaf <- renderLeaflet({
-    df<-hurdat
+    df<-atlantic
     df$colour<-ifelse(df$Category == 0.5, "lightgreen",(ifelse(df$Category == 0.75, "darkgreen",(ifelse(df$Category ==1, "yellow",
                                                                                                         (ifelse(df$Category ==2, "orange",(ifelse(df$Category ==3, "darkorange",(ifelse(df$Category ==4, "red",
                                                                                                                                                                                         (ifelse(df$Category ==5, "darkred","darkgrey")))))))))))))
@@ -756,7 +756,7 @@ server <- function(input, output) {
   
   
   output$leaf3 <- renderLeaflet({
-    landfalls<-hurdat[(hurdat$Record=="L"),c(6,7)]
+    landfalls<-atlantic[(atlantic$Record=="L"),c(6,7)]
    
     
     map <- leaflet(landfalls) %>%
