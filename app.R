@@ -655,16 +655,16 @@ server <- function(input, output) {
       
       if(input$flt!="Date")
       {
-        map<-addCircles(map, lat=df4$Lat,lng=df4$Lon, weight =4,color=df4$colour)
+        map<-addCircles(map, lat=df4$Lat,lng=df4$Lon, weight =4.5,color=df4$colour,popup = df4$Name)
       }
-      map<-addPolylines(map, lat=df4$Lat,lng=df4$Lon, weight =2,color="White",opacity = 0.60, 
-                        highlightOptions = highlightOptions(color = "white",bringToFront = T))
+      map<-addPolylines(map, lat=df4$Lat,lng=df4$Lon, weight =1,color="White",opacity = 0.60, 
+                        highlightOptions = highlightOptions(color = "white",bringToFront = T),popup = df4$Name)
     }
     if(input$flt=="Date")
     {
       if(nrow(dfPoints)>0)
       {
-        map<-addCircles(map, lat=dfPoints$Lat,lng=dfPoints$Lon, weight =12,color=dfPoints$colour)
+        map<-addCircles(map, lat=dfPoints$Lat,lng=dfPoints$Lon, weight =12,color=dfPoints$colour,popup = dfPoints$Name)
       }
     }
     
@@ -738,7 +738,7 @@ server <- function(input, output) {
       
       if(input$flt2!="Date")
       {
-        map<-addCircles(map, lat=df4$Lat,lng=df4$Lon, weight =4,color=df4$colour)
+        map<-addCircles(map, lat=df4$Lat,lng=df4$Lon, weight =4.5,color=df4$colour, popup = df4$Name)
       }
       map<-addPolylines(map, lat=df4$Lat,lng=df4$Lon, weight =1,color="White",opacity = 0.60, 
                         highlightOptions = highlightOptions(color = "white",bringToFront = T), popup = df4$Name)
@@ -747,7 +747,7 @@ server <- function(input, output) {
     {
       if(nrow(dfPoints)>0)
       {
-        map<-addCircles(map, lat=dfPoints$Lat,lng=dfPoints$Lon, weight =12,color=dfPoints$colour)
+        map<-addCircles(map, lat=dfPoints$Lat,lng=dfPoints$Lon, weight =12,color=dfPoints$colour,popup = dfPoints$Name)
       }
     }
     
