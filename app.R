@@ -340,6 +340,7 @@ WtophP<-head(WtophP,10)
 PtophP<-hurricanesP[order(hurricanesP$Pressure, decreasing = FALSE),]
 PtophP<-head(PtophP,10)
 
+
 basemap = c("Stamen.Toner", "Default", "Esri.NatGeoWorldMap" ,"Esri.WorldTopoMap" )
 
 ui <- dashboardPage(
@@ -671,7 +672,7 @@ server <- function(input, output) {
     map
   })
   
-  
+  #Pacific
   output$leaf2 <- renderLeaflet({
     df<-pacific
     df$colour<-ifelse(df$Category == 0.5, "lightgreen",(ifelse(df$Category == 0.75, "darkgreen",(ifelse(df$Category ==1, "yellow",
@@ -695,11 +696,13 @@ server <- function(input, output) {
       }
       if(input$flt2=="Top10(Wind)")
       {
-        df3<-df[(df$Name==WtophP$Name),]
+        df3<-df[(df$Key==WtophP$Key),]
+      
       }
       if(input$flt2=="Top10(Min Pressure)")
       {
-        df3<-df[(df$Name==PtophP$Name),]
+        df3<-df[(df$Key==PtophP$Key),]
+        
       }
       if(input$flt2=="Date")
       {
