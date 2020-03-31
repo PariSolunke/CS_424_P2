@@ -342,82 +342,84 @@ PtophP<-head(PtophP,10)
 
 
 basemap = c("Stamen.Toner", "Default", "Esri.NatGeoWorldMap" ,"Esri.WorldTopoMap" )
+colour = c("lightgreen","darkgreen","yellow","orange","darkorange","red","darkred","darkgrey")
+status = c("TD/SD","TS/SS","Cat 1","Cat 2","Cat 3","Cat 4","Cat 5","Other")
 
 ui <- dashboardPage(
-        dashboardHeader(title = "CS 424 Project 2"),
-        dashboardSidebar(disable = FALSE, collapsed = FALSE,
-               sidebarMenu(
-                 
-                 checkboxInput("fivehur", "Five Interesting Hurricanes", value = FALSE),
-                    conditionalPanel(
-                      condition = "input.fivehur == false",
-                      
-                      #Atlantic
-                      selectInput("flt","Atlantic Storm Filters:",c("None","Date" ,"Year","Name","Top10(Wind)","Top10(Min Pressure)"),selected = "None"),
-                      conditionalPanel(
-                        condition = "input.flt == 'Year'",
-                        selectInput("ipyr", "Selecft the Year to visualize", yr, selected = "2005"),   
-                      ),
-                      conditionalPanel(
-                        condition = "input.flt == 'Date'",
-                        dateInput("date","Date:",value = "1851-06-25"),  
-                      ),
-                      
-                      conditionalPanel(
-                        condition = "input.flt == 'Name'",
-                        selectInput("ipnm", "Select the Name to visualize", Names,selected= "OSCAR - 2018"),   
-                      ),
-                      
-                      #PACIFIC
-                      
-                      selectInput("flt2","Pacific Storm Filters:",c("None","Date" ,"Year","Name","Top10(Wind)","Top10(Min Pressure)"),selected = "None"),
-                      conditionalPanel(
-                        condition = "input.flt2 == 'Year'",
-                        selectInput("ipyrp", "Selecft the Year to visualize", yrP, selected = "2005"),   
-                      ),
-                      conditionalPanel(
-                        condition = "input.flt2 == 'Date'",
-                        dateInput("datep","Date:",value = "1851-06-25"),  
-                      ),
-                      
-                      conditionalPanel(
-                        condition = "input.flt2 == 'Name'",
-                        selectInput("ipnmp", "Select the Name to visualize", NamesP,selected= "WILLA - 2018"),   
-                      ),
-                      
-                      
-                      selectInput("Basemap", "Select a Basemap Style", basemap, selected = "Default"),
-                      checkboxInput("land", "Only hurricanes which made Landfall", value = FALSE),
-                    ),
-                 conditionalPanel(
-                   condition = "input.fivehur == true",
-                   selectInput("list","Select a Hurricane", c("GALVESTON - 1900", "KATRINA - 2005", "IVAN - 2004", "JOHN - 1994", "PATRICIA - 2015"), selected = "GALVESTON - 1900")
-                 ),
-                 
-                 
-                 
-                 menuItem(""))
+  dashboardHeader(title = "CS 424 Project 2"),
+  dashboardSidebar(disable = FALSE, collapsed = FALSE,
+                   sidebarMenu(
+                     
+                     checkboxInput("fivehur", "Five Interesting Hurricanes", value = FALSE),
+                     conditionalPanel(
+                       condition = "input.fivehur == false",
+                       
+                       #Atlantic
+                       selectInput("flt","Atlantic Storm Filters:",c("None","Date" ,"Year","Name","Top10(Wind)","Top10(Min Pressure)"),selected = "None"),
+                       conditionalPanel(
+                         condition = "input.flt == 'Year'",
+                         selectInput("ipyr", "Selecft the Year to visualize", yr, selected = "2005"),   
+                       ),
+                       conditionalPanel(
+                         condition = "input.flt == 'Date'",
+                         dateInput("date","Date:",value = "1851-06-25"),  
+                       ),
+                       
+                       conditionalPanel(
+                         condition = "input.flt == 'Name'",
+                         selectInput("ipnm", "Select the Name to visualize", Names,selected= "OSCAR - 2018"),   
+                       ),
+                       
+                       #PACIFIC
+                       
+                       selectInput("flt2","Pacific Storm Filters:",c("None","Date" ,"Year","Name","Top10(Wind)","Top10(Min Pressure)"),selected = "None"),
+                       conditionalPanel(
+                         condition = "input.flt2 == 'Year'",
+                         selectInput("ipyrp", "Selecft the Year to visualize", yrP, selected = "2005"),   
+                       ),
+                       conditionalPanel(
+                         condition = "input.flt2 == 'Date'",
+                         dateInput("datep","Date:",value = "1851-06-25"),  
+                       ),
+                       
+                       conditionalPanel(
+                         condition = "input.flt2 == 'Name'",
+                         selectInput("ipnmp", "Select the Name to visualize", NamesP,selected= "WILLA - 2018"),   
+                       ),
+                       
+                       
+                       selectInput("Basemap", "Select a Basemap Style", basemap, selected = "Default"),
+                       checkboxInput("land", "Only hurricanes which made Landfall", value = FALSE),
+                     ),
+                     conditionalPanel(
+                       condition = "input.fivehur == true",
+                       selectInput("list","Select a Hurricane", c("GALVESTON - 1900", "KATRINA - 2005", "IVAN - 2004", "JOHN - 1994", "PATRICIA - 2015"), selected = "GALVESTON - 1900")
+                     ),
+                     
+                     
+                     
+                     menuItem(""))
   ),
   dashboardBody(
     tabsetPanel(
       tabPanel( "Map",
-               fluidRow(
-                 column(6,
-                        fluidRow(
-                          box(title = "Atlantic Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
-                              leafletOutput("leaf", height = 500)
-                          ),
-                        ),
-                 ),
-                 column(6,
-                        fluidRow(
-                          box(title = "Pacific Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
-                              leafletOutput("leaf2", height = 500)
-                          ),
-                        ),
-                 ),
-                 
-               )),
+                fluidRow(
+                  column(6,
+                         fluidRow(
+                           box(title = "Atlantic Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
+                               leafletOutput("leaf", height = 500)
+                           ),
+                         ),
+                  ),
+                  column(6,
+                         fluidRow(
+                           box(title = "Pacific Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
+                               leafletOutput("leaf2", height = 500)
+                           ),
+                         ),
+                  ),
+                  
+                )),
       tabPanel("Graph",
                fluidRow(
                  column(6,
@@ -442,32 +444,32 @@ ui <- dashboardPage(
                           )
                         ),
                  ),
-               
+                 
                  column(6,
                         fluidRow(
                           box( title = "Hurricanes Per Year", solidHeader = TRUE, status = "primary", width = 12,
                                plotOutput("bar1",height = 350)
                           )
-                        
-                 ), ),
+                          
+                        ), ),
                ),
-               ),
+      ),
       tabPanel("Table",
-              fluidRow(
-               column(6,
-                      fluidRow(
-                        box( title = "List of Atlantic Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
-                             dataTableOutput("tab1")
+               fluidRow(
+                 column(6,
+                        fluidRow(
+                          box( title = "List of Atlantic Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
+                               dataTableOutput("tab1")
+                          )
                         )
-                      )
-                ),
-               column(6,
-                      fluidRow(
-                        box( title = "List of Pacific Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
-                             dataTableOutput("tab2")
+                 ),
+                 column(6,
+                        fluidRow(
+                          box( title = "List of Pacific Hurricanes", solidHeader = TRUE, status = "primary", width = 12,
+                               dataTableOutput("tab2")
+                          )
                         )
-                      )
-               )
+                 )
                )),
       tabPanel( "HeatMap", h4("Heatmap of landfalls to show which places are most vulnerable."),
                 fluidRow(
@@ -585,7 +587,7 @@ server <- function(input, output) {
     
   })
   
-
+  
   
   
   #Atlantic
@@ -668,7 +670,7 @@ server <- function(input, output) {
         map<-addCircles(map, lat=dfPoints$Lat,lng=dfPoints$Lon, weight =12,color=dfPoints$colour,popup = dfPoints$Name)
       }
     }
-    
+    map<-addLegend(map, position = "bottomright", colors = colour, labels = status)
     map
   })
   
@@ -697,7 +699,7 @@ server <- function(input, output) {
       if(input$flt2=="Top10(Wind)")
       {
         df3<-df[(df$Key==WtophP$Key),]
-      
+        
       }
       if(input$flt2=="Top10(Min Pressure)")
       {
@@ -753,18 +755,18 @@ server <- function(input, output) {
         map<-addCircles(map, lat=dfPoints$Lat,lng=dfPoints$Lon, weight =12,color=dfPoints$colour,popup = dfPoints$Name)
       }
     }
-    
+    map<-addLegend(map, position = "bottomright", colors = colour, labels = status)
     map
   })
   
   
   output$leaf3 <- renderLeaflet({
     landfalls<-atlantic[(atlantic$Record=="L"),c(6,7)]
-   
+    
     
     map <- leaflet(landfalls) %>%
-           addProviderTiles(providers$CartoDB.DarkMatter) %>%
-           addHeatmap(lng = ~Lon, lat = ~Lat,blur=8, radius =6)
+      addProviderTiles(providers$CartoDB.DarkMatter) %>%
+      addHeatmap(lng = ~Lon, lat = ~Lat,blur=8, radius =6)
     map
   })
   

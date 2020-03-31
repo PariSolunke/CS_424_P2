@@ -5,8 +5,8 @@ account: parisolunke
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1918989
-bundleId: 2945219
+bundleId: 2946603
 url: https://parisolunke.shinyapps.io/CS_424_P2/
-when: 1585593559.58442
+when: 1585613758.43327
 asMultiple: FALSE
 asStatic: FALSE
